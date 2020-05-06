@@ -1,8 +1,8 @@
 from sqlalchemy import Column, BigInteger, Integer
 from bd import Base
 
-class TimeFormat(Base):
-    __tablename__ = 'time_format'
+class Time(Base):
+    __tablename__ = 'time'
     
     start_time = Column(BigInteger, primary_key=True)
     hour       = Column(Integer)
@@ -22,7 +22,7 @@ class TimeFormat(Base):
         self.weelday    = weelday
         
     def __repr__(self):
-        return "<TimeFormat(start_time='{}', hour='{}', day='{}', week={}, month={},year={}, weekday={})>"\
+        return "<Time(start_time='{}', hour='{}', day='{}', week={}, month={},year={}, weekday={})>"\
                 .format(self.start_time, self.hour, self.day, self.week,self.month,self.year,self.weekday)
     
     def __eq__(self, otro):

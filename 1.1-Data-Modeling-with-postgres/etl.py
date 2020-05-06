@@ -3,7 +3,7 @@ import pandas as pd
 from models.song import Song
 from models.artist import Artist
 from models.songPlay import SongPlay
-from models.timeFormat import TimeFormat
+from models.time import Time
 from models.user import User
 import numpy as np
 from bd import Base,session,engine
@@ -62,8 +62,10 @@ def main():
     df_user = df_user.drop_duplicates(['user_id'])
 
     #Se obtiene los datos para la table SONG_PLAY
-    df_song_play = df_long_data[['userId','sessionId','ts', 'level', 'location', 'userAgent','song','artist']]
-    df_song_play_join = pd.merge(df_song_play, df_song_artist, on=['song','artist'], how='left')
+    df_song_data_aux = df_song_data[['artist_id','song_id', 'title','artist_name']].rename(columns={'title': 'song', 'artist_name': 'artist'})
+    df_long_data_aux = df_long_data[['userId', 'sessionId','userAgent','level','location','ts','artist','song']]
+
+    df_song_play_join = pd.merge(df_long_data_aux, df_song_data_aux, on=['song','artist'], how='left')
     df_song_play_join = df_song_play_join.rename(columns={'ts': 'start_time', 'sessionId': 'session_id','userAgent': 'user_agent','userId': 'user_id'}).replace('',0)
 
     #Se crea el indice songplay_id
@@ -72,7 +74,7 @@ def main():
     #Se crean los objetos para ser guardados en BD
     listObjectSong       = [Song(**kwargs) for kwargs in df_song.to_dict(orient='records')]
     listObjectArtist     = [Artist(**kwargs) for kwargs in df_artist.to_dict(orient='records')]
-    listObjectTimeFormat = [TimeFormat(**kwargs) for kwargs in df_time_format.to_dict(orient='records')]
+    listObjectTime       = [Time(**kwargs) for kwargs in df_time_format.to_dict(orient='records')]
     listObjectUser       = [User(**kwargs) for kwargs in df_user.to_dict(orient='records')]
     listObjectSongPlay   = [SongPlay(**kwargs) for kwargs in df_song_play_join.to_dict(orient='records')]
 
@@ -80,11 +82,11 @@ def main():
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
 
-    #Se guardan los obejtos
+    #Se guardan los objetos
     try:
         session.bulk_save_objects(listObjectSong)
         session.bulk_save_objects(listObjectArtist)
-        session.bulk_save_objects(listObjectTimeFormat)
+        session.bulk_save_objects(listObjectTime)
         session.bulk_save_objects(listObjectUser)
         session.bulk_save_objects(listObjectSongPlay)
         session.commit()
